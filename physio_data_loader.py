@@ -88,7 +88,5 @@ def get_data(subjects,runs,PATH):
         
     f.close()
     return data_return, class_return
-    
-X, Y = get_data(([100]),([13]),'')
 
     
