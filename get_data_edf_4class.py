@@ -24,9 +24,31 @@ def get_data(subjects,runs,PATH):
             class_return    numpy matrix     size = NO_events
             
     '''
-    
-    # the runs where we will get the foot data
-    feet_runs = np.array([5,6,9,10,13,14])
+    """
+    DATA EXPLANATION:
+        
+        LABELS: 
+        both first_set and second_set
+            T0: rest
+        first_set (real motion in runs 3, 7, and 11; imagined motion in runs 4, 8, and 12)
+            T1: the left fist 
+            T2: the right fist
+        second_set (real motion in runs 5, 9, and 13; imagined motion in runs 6, 10, and 14)
+            T1: both fists
+            T2: both feet
+        
+        This Program:
+            Here, we get data from the first_set (rest, left fist, right fist), 
+            and also data from the second_set (rest, both feet).
+            We ignore data for T1 from the second_set and thus return data for 
+            four classes/categories of events: Rest, Left Fist, Right Fist, Both Feet.
+    """
+    first_set = np.array([3,4,7,8,11,12])
+    second_set = np.array([5,6,9,10,13,14])
+    #first_set_real = np.array([3,7,11])
+    #first_set_imagined = np.array([4,8,12])
+    #second_set_real = np.array([5,9,13])
+    #second_set_imagined = np.array([6,10,14])
     
     NO_channels = 64
     
@@ -43,7 +65,7 @@ def get_data(subjects,runs,PATH):
     
     for subject in subjects:
         for run in runs:
-            
+            # Correct Naming for files
             if subject < 10:
                 str_subject = '00'+str(subject)
             elif subject < 100:
@@ -74,7 +96,6 @@ def get_data(subjects,runs,PATH):
                 # Fill the matrix with all datapoints from each channel
                 sigbufs[i, :] = f.readSignal(i)
             
-            
             # Get Label information
             annotations = f.readAnnotations()
             
@@ -93,7 +114,7 @@ def get_data(subjects,runs,PATH):
             data_feet = np.empty((0,NO_channels,Window_Length))
             
             
-            if run in feet_runs:
+            if run in second_set:
                 for ii in range (0,np.size(labels)):
                     if labels[ii] == 'T0':
                         labels_for_feet = np.append(labels_for_feet,[0])
@@ -124,4 +145,3 @@ def get_data(subjects,runs,PATH):
             
     return data_return, class_return
 
-    
