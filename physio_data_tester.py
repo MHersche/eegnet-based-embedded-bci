@@ -27,7 +27,10 @@ def test_data(subjects, runs, PATH):
         
     Return: PATHS -- PATHs to irregular data in a String List
     '''
-    PATHS = []
+    # Define expected values
+    frequency = 160
+    eeg_channels = 64
+    events = 30
     for subject in subjects:
         for run in runs:
             
@@ -62,34 +65,27 @@ def test_data(subjects, runs, PATH):
             annotations = f.readAnnotations()
             labels = annotations[2]
             
-            # Define expected values
-            frequency = 160
-            eeg_channels = 64
-            events = 30
-            
             # Check irregularities
             if (frequency != freq[0]):
-                print('S'+ subject_str + 'R' + run_str + "  Frequency changed: " + str(frequency) + " to: " + str(freq[0]))
-                #frequency = freq[0]
-                if file_name not in PATHS:
-                    PATHS.append(file_name)
+                print('S'+ subject_str + 'R' + run_str + "  Frequency different: " + str(frequency) + " to: " + str(freq[0]))
+                if subject in subjects: subjects.remove(subject)
             
             if (eeg_channels != n):
-                print('S'+ subject_str + 'R' + run_str + "  Number of signals changed: " + str(eeg_channels) + " to: " + str(n))
-                #eeg_channels = n
-                if file_name not in PATHS:
-                    PATHS.append(file_name)
+                print('S'+ subject_str + 'R' + run_str + "  Number of signals different: " + str(eeg_channels) + " to: " + str(n))
+                if subject in subjects: subjects.remove(subject)
                 
             if (events != len(labels)):
-                print('S'+ subject_str + 'R' + run_str + "  Number of Events per Run changed: " + str(events) + " to: " + str(len(labels)))
-                #events = len(labels)
-                if file_name not in PATHS:
-                    PATHS.append(file_name)
+                print('S'+ subject_str + 'R' + run_str + "  Number of Events per Run different: " + str(events) + " to: " + str(len(labels)))
+                if subject in subjects: subjects.remove(subject)
         
             f.close()
-    return PATHS
+    return subjects
 
 
-""" example usage:
-p = test_data(np.arange(1,110), np.arange(3,15), "<PATH>")
-""" 
+#""" example usage:
+    
+PATH = "/home/bukaya/mlEEG/files/"
+s = [i for i in range(1,110)]
+r = [i for i in range(3,15)]
+subs = test_data(s, r, PATH)
+#""" 
