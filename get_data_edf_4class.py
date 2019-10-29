@@ -10,15 +10,19 @@ import numpy as np
 import pyedflib as edf
 import os
 
+# to calculate mean and the standard deviation
+import statistics as stats
+
 
 __author__ = "Batuhan Tomekce and Burak Alp Kaya"
 __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
 
-def get_data(subjects,runs,PATH):
+def get_data(subjects,runs,PATH, normalization: bool):
     '''
     Keyword arguments:
     subject -- array of subject numbers in range [1, .. , 109] (integer)
     runs -- array of the numbers of the runs in range [1, .. , 14] (integer)
+    normalization -- choose True to do normalization (default value is False)
     
     Return: data_return     numpy matrix     size = NO_events x 64 x 656
             class_return    numpy matrix     size = NO_events
@@ -87,7 +91,7 @@ def get_data(subjects,runs,PATH):
             n = f.signals_in_file
             # These are the eeg channel/electrode names
             #signal_labels = f.getSignalLabels()
-            # Initiate 64*20000 matrix to hold all datapoints
+            # Initiate eg.: 64*20000 matrix to hold all datapoints
             sigbufs = np.zeros((n, f.getNSamples()[0]))
             # Here: n=64 arange(n) creates array ([0, 1, ..., n-2, n-1])
             for i in np.arange(n):
@@ -111,6 +115,10 @@ def get_data(subjects,runs,PATH):
             # initialize empty array for just feet data because it is variable in size for each run
             labels_for_feet = np.empty(0)
             data_feet = np.empty((0,NO_channels,Window_Length))
+
+            # initialize empty array to use as a temporary variable
+            labels_to_concat = np.empty(0)
+            data_to_concat = np.empty((0,NO_channels,Window_Length))
              
             
             if run in second_set:
@@ -123,9 +131,9 @@ def get_data(subjects,runs,PATH):
                         labels_for_feet = np.append(labels_for_feet,[3])
                         # change data shape and seperate events
                         data_feet = np.vstack((data_feet, np.array(sigbufs[:,int(points[ii]):int(points[ii])+Window_Length])[None]))            
-                   # concatenate arrays in order to get the whole data in one input array    
-                X = np.concatenate((X,data_feet))
-                y = np.concatenate((y,labels_for_feet))
+                # use temporary variables 
+                data_to_concat = data_feet
+                labels_to_concat = labels_for_feet
             else:
                 for ii in range (0,np.size(labels)):
                     if labels[ii] == 'T0':
@@ -137,9 +145,21 @@ def get_data(subjects,runs,PATH):
                     # change data shape and seperate events
                     data_step[ii,:,:] = sigbufs[:,int(points[ii]):int(points[ii])+Window_Length]
                 
-                # concatenate arrays in order to get the whole data in one input array    
-                X = np.concatenate((X,data_step))
-                y = np.concatenate((y,labels_int))
+                # use temporary variables 
+                data_to_concat = data_step
+                labels_to_concat = labels_int
+
+            # concatenate arrays in order to get the whole data in one input array    
+            X = np.concatenate((X,data_to_concat))
+            y = np.concatenate((y,labels_to_concat))
+
+            # do normalization
+            if normalization == True:
+                for i in range(X.shape[0]):
+                    for ii in range(X.shape[1]):
+                        std_dev = stats.stdev(X[i,ii])
+                        mean = stats.mean(X[i,ii])
+                        X[i,ii] = (X[i,ii] - mean) / std_dev
             
             
     return X, y
