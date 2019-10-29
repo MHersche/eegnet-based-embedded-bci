@@ -22,7 +22,8 @@ def get_data(subjects,runs,PATH):
     
     Return: data_return     numpy matrix     size = NO_events x 64 x 656
             class_return    numpy matrix     size = NO_events
-            
+            X: Trials
+            y: labels
     '''
     """
     DATA EXPLANATION:
@@ -43,24 +44,22 @@ def get_data(subjects,runs,PATH):
             We ignore data for T1 from the second_set and thus return data for 
             four classes/categories of events: Rest, Left Fist, Right Fist, Both Feet.
     """
+    # Define runs where the two different sets of tasks were performed
     first_set = np.array([3,4,7,8,11,12])
     second_set = np.array([5,6,9,10,13,14])
-    #first_set_real = np.array([3,7,11])
-    #first_set_imagined = np.array([4,8,12])
-    #second_set_real = np.array([5,9,13])
-    #second_set_imagined = np.array([6,10,14])
+
     
     NO_channels = 64
     
     # depending on data
-    NO_trials = 30 # each rung has 30 trials
-    Window_Length = int(160 * 4.1)  # 656
+    NO_trials = 30 # each run has 30 trials
+    Window_Length = int(160 * 4)  # 640
     
     data_step = np.zeros((NO_trials,NO_channels,Window_Length))
     
     # initialize empty arrays to concatanate with itself later
-    data_return = np.empty((0,NO_channels,Window_Length))
-    class_return = np.empty(0)
+    X = np.empty((0,NO_channels,Window_Length))
+    y = np.empty(0)
     
     
     for subject in subjects:
@@ -112,7 +111,7 @@ def get_data(subjects,runs,PATH):
             # initialize empty array for just feet data because it is variable in size for each run
             labels_for_feet = np.empty(0)
             data_feet = np.empty((0,NO_channels,Window_Length))
-            
+             
             
             if run in second_set:
                 for ii in range (0,np.size(labels)):
@@ -125,8 +124,8 @@ def get_data(subjects,runs,PATH):
                         # change data shape and seperate events
                         data_feet = np.vstack((data_feet, np.array(sigbufs[:,int(points[ii]):int(points[ii])+Window_Length])[None]))            
                    # concatenate arrays in order to get the whole data in one input array    
-                data_return = np.concatenate((data_return,data_feet))
-                class_return = np.concatenate((class_return,labels_for_feet)) 
+                X = np.concatenate((X,data_feet))
+                y = np.concatenate((y,labels_for_feet))
             else:
                 for ii in range (0,np.size(labels)):
                     if labels[ii] == 'T0':
@@ -139,9 +138,9 @@ def get_data(subjects,runs,PATH):
                     data_step[ii,:,:] = sigbufs[:,int(points[ii]):int(points[ii])+Window_Length]
                 
                 # concatenate arrays in order to get the whole data in one input array    
-                data_return = np.concatenate((data_return,data_step))
-                class_return = np.concatenate((class_return,labels_int))
+                X = np.concatenate((X,data_step))
+                y = np.concatenate((y,labels_int))
             
             
-    return data_return, class_return
+    return X, y
 

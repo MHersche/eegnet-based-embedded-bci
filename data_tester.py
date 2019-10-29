@@ -10,7 +10,7 @@ __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
         PATH = "../files/"
         s = [i for i in range(1,110)]
         r = [i for i in range(3,15)]
-        subs = test_data(s, r, PATH, 160, 64, 30)
+        subs = test_data(s, r, PATH, 160, 64, 30) #The last three arguments are optional, these are the default values.
 
 """
 
@@ -19,7 +19,7 @@ import pyedflib
 import numpy as np
 import os
 
-def test_data(subjects, runs, PATH, default_frequency, default_no_channels, default_no_events):
+def test_data(subjects, runs, PATH, default_frequency=160, default_no_channels=64, default_no_events=30):
     
     '''
     Keyword arguments:
