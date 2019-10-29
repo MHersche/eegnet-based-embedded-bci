@@ -12,7 +12,7 @@ import data_tester as tst
 from tensorflow.keras import utils as np_utils
 from tensorflow.keras.callbacks import ModelCheckpoint
 # EEGNet models
-#import models as models
+import models as models
 # tools for plotting confusion matrices
 #from matplotlib import pyplot as plt
 #from conf_matrix import plot_confusion_matrix
@@ -65,11 +65,45 @@ X_Train_real = (np.expand_dims(X_Train, axis=1))
 X_Test_real  = (np.expand_dims(X_Test, axis=1))
 
 # convert labels to one-hot encodings.
-y_Train_cat      = np_utils.to_categorical(y_Train)
-y_Test_cat       = np_utils.to_categorical(y_Test)
+y_Train      = np_utils.to_categorical(y_Train)
+y_Test       = np_utils.to_categorical(y_Test)
 
 # TODO: implement k-fold cross validation on prepared dataset
 # TODO: calculate/determine EEGNet parameters
 
-#model = models.EEGNet(nb_classes = 4, Chans=64, Samples=y_Train.size*640, regRate=.25,
-			   #dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
+model = models.EEGNet(nb_classes = 4, Chans=64, Samples=640, regRate=.25,
+			   dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
+
+# compile the model and set the optimizers
+model.compile(loss='categorical_crossentropy', optimizer='adam', 
+              metrics = ['accuracy'])
+
+# count number of parameters in the model
+#numParams    = model.count_params()
+
+# set a valid path for your system to record model checkpoints
+checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint.h5', verbose=1,
+                                save_best_only=True)
+
+# the syntax is {class_1:weight_1, class_2:weight_2,...}. Here just setting
+# the weights all to be 1
+# class_weights = {1:1, 2:1, 3:1, 4:1} # start from 0 or 1 ??
+
+fittedModel = model.fit(X_Train_real,y_Train, batch_size = 16, epochs = 50, verbose = 2)
+
+# load optimal weights
+# model.load_weights('/tmp/checkpoint.h5')
+
+###############################################################################
+# make prediction on test set.
+###############################################################################
+
+probs       = model.predict(X_Test_real)
+preds       = probs.argmax(axis = -1)  
+acc         = np.mean(preds == y_Test.argmax(axis=-1))
+print("Classification accuracy: %f " % (acc))
+
+# plot the confusion matrices for both classifiers
+#names        = ['left hand', 'right hand', 'foot', 'tongue']
+#plt.figure(0)
+#plot_confusion_matrix(preds, Y_eval.argmax(axis = -1), names, title = 'EEGNet-8,2')
