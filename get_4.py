@@ -17,12 +17,39 @@ import statistics as stats
 __author__ = "Batuhan Tomekce and Burak Alp Kaya"
 __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
 
-def get_data(subjects , runs, PATH, normalization=False):
+def get_data(PATH, long = False, normalization = 0):
     '''
     Keyword arguments:
     subject -- array of subject numbers in range [1, .. , 109] (integer)
     runs -- array of the numbers of the runs in range [1, .. , 14] (integer)
-    normalization -- choose True to do normalization (default value is False)
+    normalization -- 0(default): no normalization, 1: normalized per channel, 2: normalized per all trials
+    long -- If True: Trials of length 6s returned. If False: Trials of length 3s returned
+    
+    Return: data_return     numpy matrix     size = NO_events x 64 x 656
+            class_return    numpy matrix     size = NO_events
+            X: Trials
+            y: labels
+    '''
+    # Define subjects whose data is not taken, for details see data tester
+    excluded_subjects = [88,92,100,104,106]
+    # Defin subjects whose data is taken, namely from 1 to 109 excluding excluded_subjects
+    subjects = [x for x in range(1,110) if (x not in excluded_subjects)]
+    
+    baseline_run = 1
+    mi_runs = [4, 6, 8, 10, 12, 14]
+    
+    X_0, y_0 = read_data(subjects = subjects, runs = baseline_run, PATH = PATH, long=long, normalization=normalization)
+    
+    X_LRF, y_LRF = read_data(subjects = subjects, runs = mi_runs, PATH = PATH, long=long, normalization=normalization)
+    
+    return
+    
+def read_data(subjects , runs, PATH, long=False, normalization=0):
+    '''
+    Keyword arguments:
+    subject -- array of subject numbers in range [1, .. , 109] (integer)
+    runs -- array of the numbers of the runs in range [1, .. , 14] (integer)
+    normalization -- 0(default): no normalization, 1: normalized per channel, 2: normalized per all trials
     
     Return: data_return     numpy matrix     size = NO_events x 64 x 656
             class_return    numpy matrix     size = NO_events
@@ -32,7 +59,7 @@ def get_data(subjects , runs, PATH, normalization=False):
     """
     DATA EXPLANATION:
         
-        LABELS: 
+        LABELS:
         both first_set and second_set
             T0: rest
         first_set (real motion in runs 3, 7, and 11; imagined motion in runs 4, 8, and 12)
@@ -52,15 +79,20 @@ def get_data(subjects , runs, PATH, normalization=False):
     base_subject_directory = 'S{:03d}'
     
     # Define runs where the two different sets of tasks were performed
-    first_set = np.array([3,4,7,8,11,12])
-    second_set = np.array([5,6,9,10,13,14])
-
+    baseline = 1
+    first_set = np.array([4,8,12])
+    second_set = np.array([6,10,14])
     
+    # Number of EEG channels
     NO_channels = 64
+    # Number of Trials extracted per Run
+    NO_trials = 21 
     
-    # depending on data
-    NO_trials = 30 # each run has 30 trials
-    Window_Length = int(160 * 4)  # 640
+    # Define Sample size per Trial 
+    if not long:
+        Window_Length = int(160 * 3) # 3s Trials: 480 samples
+    else:
+        Window_Length = int(160 * 6) # 6s Trials: 960 samples
     
     data_step = np.zeros((NO_trials,NO_channels,Window_Length))
     
@@ -126,7 +158,7 @@ def get_data(subjects , runs, PATH, normalization=False):
                 # use temporary variables 
                 data_to_concat = data_feet
                 labels_to_concat = labels_for_feet
-            else:
+            elif run in first_set:
                 for ii in range (0,np.size(labels)):
                     if labels[ii] == 'T0':
                         labels_int[ii] = 0
@@ -136,7 +168,7 @@ def get_data(subjects , runs, PATH, normalization=False):
                         labels_int[ii] = 2
                     # change data shape and seperate events
                     data_step[ii,:,:] = sigbufs[:,int(points[ii]):int(points[ii])+Window_Length]
-                
+               
                 # use temporary variables 
                 data_to_concat = data_step
                 labels_to_concat = labels_int
@@ -146,7 +178,7 @@ def get_data(subjects , runs, PATH, normalization=False):
             y = np.concatenate((y,labels_to_concat))
 
             # do normalization
-            if normalization == True:
+            if normalization == 1:
                 for i in range(X.shape[0]):
                     for ii in range(X.shape[1]):
                         std_dev = stats.stdev(X[i,ii])
