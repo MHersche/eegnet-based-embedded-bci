@@ -27,27 +27,53 @@ def get_data(PATH, long = False, normalization = 0):
     
     Return: data_return     numpy matrix     size = NO_events x 64 x 656
             class_return    numpy matrix     size = NO_events
-            X: Trials
-            y: labels
+            X_Train: Training Trials
+            y_Train: Training labels
+            mean: (if normalization != 0) mean of normalized Training set
+            std_dev: (if normalization != 0) std_dev of normalized Training set
     '''
     # Define subjects whose data is not taken, for details see data tester
     excluded_subjects = [88,92,100,104,106]
-    # Defin subjects whose data is taken, namely from 1 to 109 excluding excluded_subjects
+    # Define subjects whose data is taken, namely from 1 to 109 excluding excluded_subjects
     subjects = [x for x in range(1,2) if (x not in excluded_subjects)]
-    
+    # Define baseline and MI runs for Training Data
     baseline_run = [1]
-    mi_runs = [4, 6, 8, 10, 12, 14]
+    mi_runs = [4, 6, 8, 10]
+    # Read Rest(0) data from baseline
+    X_0, y_0 = read_data(subjects = subjects, runs = baseline_run, PATH = PATH, long=long)
+    # Read L/R/F data from MI runs
+    X_LRF, y_LRF = read_data(subjects = subjects, runs = mi_runs, PATH = PATH, long=long)
     
-    X_0, y_0 = read_data(subjects = subjects, runs = baseline_run, PATH = PATH, long=long, normalization=normalization)
-    
-    X_LRF, y_LRF = read_data(subjects = subjects, runs = mi_runs, PATH = PATH, long=long, normalization=normalization)
-    
+    # Merge Rest(0) data from baseline run with the L/R/F data from the MI runs
     X_Train = np.concatenate((X_0, X_LRF))
     y_Train = np.append(y_0, y_LRF)
     
-    return X_Train, y_Train
+    # Shuffle Data reproducably
+    np.random.seed(42)
+    np.random.shuffle(X_Train)
+    np.random.shuffle(y_Train)
     
-def read_data(subjects , runs, PATH, long=False, normalization=0):
+    if(normalization == 0):
+        return X_Train, y_Train
+    # do normalization
+    if(normalization == 1):
+        #TODO: declare std_dev, mean arrays to return
+        for i in range(X_Train.shape[0]):
+            for ii in range(X_Train.shape[1]):
+                std_dev = stats.stdev(X_Train[i,ii])
+                mean = stats.mean(X_Train[i,ii])
+                X_Train[i,ii] = (X_Train[i,ii] - mean) / std_dev
+        
+        return X_Train, y_Train, mean, std_dev
+    
+    if(normalization == 2):
+        #TODO: implement second type of normalization
+        mean = std_dev = 0
+        
+        return X_Train, y_Train, mean, std_dev
+    
+    
+def read_data(subjects , runs, PATH, long=False):
     '''
     Keyword arguments:
     subject -- array of subject numbers in range [1, .. , 109] (integer)
@@ -95,13 +121,11 @@ def read_data(subjects , runs, PATH, long=False, normalization=0):
     if not long:
         Window_Length = int(160 * 3) # 3s Trials: 480 samples
     else:
-        Window_Length = int(160 * 6) # 6s Trials: 960 samples
-    
+        Window_Length = int(160 * 6) # 6s Trials: 960 samples 
     
     # initialize empty arrays to concatanate with itself later
     X = np.empty((0,NO_channels,Window_Length))
     y = np.empty(0)
-    
     
     for subject in subjects:
         #For each subject, a certain number of trials from each class should be extracted
@@ -154,8 +178,7 @@ def read_data(subjects , runs, PATH, long=False, normalization=0):
                         counter_F += 1
                         labels_int = np.append(labels_int,[3])
                         # change data shape and seperate events
-                        data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii]):int(points[ii])+Window_Length])[None]))
-                        
+                        data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii]):int(points[ii])+Window_Length])[None]))        
                 
             elif run in first_set:
                 for ii in range(0,np.size(labels)):
@@ -181,18 +204,8 @@ def read_data(subjects , runs, PATH, long=False, normalization=0):
                         labels_int = np.append(labels_int, [0])
                         data_step = np.vstack((data_step, np.array(sigbufs[:,(ii*Window_Length):((ii+1)*Window_Length)])[None]))
 
-
             # concatenate arrays in order to get the whole data in one input array    
             X = np.concatenate((X,data_step))
             y = np.concatenate((y,labels_int))
-
-            # do normalization
-            if normalization == 1:
-                for i in range(X.shape[0]):
-                    for ii in range(X.shape[1]):
-                        std_dev = stats.stdev(X[i,ii])
-                        mean = stats.mean(X[i,ii])
-                        X[i,ii] = (X[i,ii] - mean) / std_dev
-            
-            
+        
     return X, y
