@@ -69,6 +69,9 @@ np.random.shuffle(y_Test)
 X_Train_real = (np.expand_dims(X_Train, axis=1))
 X_Test_real  = (np.expand_dims(X_Test, axis=1))
 
+# use sample size
+SAMPLE_SIZE = np.shape(X_Train_real)[3]
+
 # convert labels to one-hot encodings.
 y_Train_cat      = np_utils.to_categorical(y_Train)
 y_Test_cat       = np_utils.to_categorical(y_Test)
@@ -76,16 +79,22 @@ y_Test_cat       = np_utils.to_categorical(y_Test)
 # TODO: implement k-fold cross validation on prepared dataset
 # TODO: calculate/determine EEGNet parameters
 
-kf = StratifiedKFold(n_splits = 3)
+# using 5 folds
+kf = StratifiedKFold(n_splits = 5)
 
 alphas = [10**i for i in range(-3,4)]
 results = np.zeros(len(alphas))
-x_train_aux = np.reshape(X_Train_real, (1051, 64*640))
-split = kf.split(x_train_aux, y_Train)
+
+# create a 2D array for fold creation. # 640 is here the sample size.
+x_train_aux = np.reshape(X_Train_real, (np.shape(X_Train_real)[0], 64*SAMPLE_SIZE))
+
 
 for i in range(len(alphas)):
+
+    # counter for the csv files
+    counter = 0
     
-    model = models.EEGNet(nb_classes = 4, Chans=64, Samples=640, regRate=alphas[i],
+    model = models.EEGNet(nb_classes = 4, Chans=64, Samples=SAMPLE_SIZE, regRate=alphas[i],
                 dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
     
     for train, test in kf.split(x_train_aux, y_Train):
@@ -105,15 +114,39 @@ for i in range(len(alphas)):
         # the weights all to be 1
         # class_weights = {1:1, 2:1, 3:1, 4:1} # start from 0 or 1 ??
 
-        model.fit(X_Train_real[train], y_Train_cat[train], validation_data = (X_Train_real[test], y_Train_cat[test]), batch_size = 16, epochs = 5, verbose = 2)
+        # creating a history object
+        history = model.fit(X_Train_real[train], y_Train_cat[train], validation_data = (X_Train_real[test], y_Train_cat[test]), batch_size = 16, epochs = 5, verbose = 2)
+        
+        # too see what is inside can be maybe commented
+        print(history.history.keys())
+
+        # assuming you have a csv_files directory
+        # another way to have the same functionality but uses more memory
+        '''
+        import pandas as pd 
+        pd.DataFrame(np_array).to_csv("path/to/file.csv")
+        '''
+
+        name_for_train_acc = "csv_files/train_param_alpha" + str(i) + "split" + str(counter) + ".csv"
+        name_for_val_acc = "csv_files/test_param_alpha" + str(i) + "split" + str(counter) + ".csv"
+        np.savetxt(name_for_train_acc, history.history['accuracy'])
+        np.savetxt(name_for_val_acc, history.history['val_accuracy'])
+
+        # can be commented out because history object gives the same result for each epoch.
+        '''
         probs       = model.predict(X_Train_real[test])
         preds       = probs.argmax(axis = -1)  
         acc         = np.mean(preds == y_Train_cat[test].argmax(axis=-1))
         results[i] += acc
+        '''
 
+        counter = counter + 1
+
+# do training again with the best model can also be commented for now
+'''
 lmbda = np.argmax(results)
 
-model = models.EEGNet(nb_classes = 4, Chans=64, Samples=640, regRate=alphas[lmbda],
+model = models.EEGNet(nb_classes = 4, Chans=64, Samples=SAMPLE_SIZE, regRate=alphas[lmbda],
                        dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
 model.compile(loss='categorical_crossentropy', optimizer='adam', 
                       metrics = ['accuracy'])
@@ -124,8 +157,10 @@ model.fit(X_Train_real, y_Train_cat, batch_size = 16, epochs = 50, verbose = 2)
 # model.load_weights('/tmp/checkpoint.h5')
 
 ###############################################################################
-# make prediction on test set.
+# make prediction on test set. 
 ###############################################################################
+
+# COMMENT THIS FOR NOW
 
 probs       = model.predict(X_Test_real)
 preds       = probs.argmax(axis = -1)  
@@ -136,4 +171,4 @@ print("Classification accuracy: %f " % (acc))
 #names        = ['left hand', 'right hand', 'foot', 'tongue']
 #plt.figure(0)
 #plot_confusion_matrix(preds, Y_eval.argmax(axis = -1), names, title = 'EEGNet-8,2')
-
+'''
