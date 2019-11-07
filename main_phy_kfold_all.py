@@ -50,10 +50,11 @@ for i in range(len(alphas)):
     # counter for the csv files
     counter = 0
     
-    model = models.EEGNet(nb_classes = 4, Chans=64, Samples=SAMPLE_SIZE, regRate=alphas[i],
-                dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
-    
     for train, test in kf.split(x_train_aux, y_Train):
+
+        # creating the model every time?
+        model = models.EEGNet(nb_classes = 4, Chans=64, Samples=SAMPLE_SIZE, regRate=alphas[i],
+                        dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
         
         # compile the model and set the optimizers
         model.compile(loss='categorical_crossentropy', optimizer='adam', 
@@ -71,7 +72,7 @@ for i in range(len(alphas)):
         # class_weights = {1:1, 2:1, 3:1, 4:1} # start from 0 or 1 ??
 
         # creating a history object
-        history = model.fit(X_Train_real[train], y_Train_cat[train], validation_data = (X_Train_real[test], y_Train_cat[test]), batch_size = 16, epochs = 5, verbose = 2)
+        history = model.fit(X_Train_real[train], y_Train_cat[train], validation_data = (X_Train_real[test], y_Train_cat[test]), batch_size = 16, epochs = 500, verbose = 2)
         
         # too see what is inside can be maybe commented
         print(history.history.keys())
