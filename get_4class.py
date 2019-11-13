@@ -52,6 +52,7 @@ def get_data(PATH, long = False, normalization = 0,subjects_list=range(1,110)):
     # Shuffle Data reproducably
     np.random.seed(42)
     np.random.shuffle(X_Train)
+    np.random.seed(42)
     np.random.shuffle(y_Train)
     
     if(normalization == 0):

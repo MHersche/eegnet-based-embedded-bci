@@ -46,7 +46,7 @@ y_Train_cat      = np_utils.to_categorical(y_Train)
 # using 5 folds
 kf = StratifiedKFold(n_splits = 5)
 
-alphas = [10**i for i in range(-3,1)]
+alphas = [10**i for i in range(-4,-3)]
 results = np.zeros(len(alphas))
 
 # create a 2D array for fold creation. # 640 is here the sample size.
@@ -93,12 +93,16 @@ for i in range(len(alphas)):
         '''
         training_accuracies = f'{results_dir}/train_lr[{alphas[i]}]_dr[0.2]_split[{counter}].csv'
         validation_accuracies = f'{results_dir}/valid_lr[{alphas[i]}]_dr[0.2]_split[{counter}].csv'
+        training_losses = f'{results_dir}/train_lr_loss[{alphas[i]}]_dr[0.2]_split[{counter}].csv'
+        validation_losses = f'{results_dir}/valid_lr_loss[{alphas[i]}]_dr[0.2]_split[{counter}].csv'
         '''
         name_for_train_acc = "csv_files/train_param_alpha" + str(i) + "split" + str(counter) + ".csv"
         name_for_val_acc = "csv_files/test_param_alpha" + str(i) + "split" + str(counter) + ".csv"
         '''
         np.savetxt(training_accuracies, history.history['acc'])
         np.savetxt(validation_accuracies, history.history['val_acc'])
+        np.savetxt(training_losses, history.history['loss'])
+        np.savetxt(validation_losses, history.history['val_loss'])
 
         # can be commented out because history object gives the same result for each epoch.
         '''
