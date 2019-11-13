@@ -17,13 +17,14 @@ import statistics as stats
 __author__ = "Batuhan Tomekce and Burak Alp Kaya"
 __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
 
-def get_data(PATH, long = False, normalization = 0):
+def get_data(PATH, long = False, normalization = 0,subjects_list=range(1,2)):
     '''
     Keyword arguments:
-    subject -- array of subject numbers in range [1, .. , 109] (integer)
-    runs -- array of the numbers of the runs in range [1, .. , 14] (integer)
-    normalization -- 0(default): no normalization, 1: normalized per channel, 2: normalized per all trials
+    PATH: path to directory under which the test data lies.
+    normalization -- [0 (default)]: no normalization, 1: normalized per channel, 2: normalized per all trials
     long -- If True: Trials of length 6s returned. If False: Trials of length 3s returned
+    subjects_list -- [range(1,110) (default)]: array of subject numbers in range [1, .. , 109] 
+            ,used if not all subjects are to be taken
     
     Return: data_return     numpy matrix     size = NO_events x 64 x 656
             class_return    numpy matrix     size = NO_events
@@ -35,7 +36,7 @@ def get_data(PATH, long = False, normalization = 0):
     # Define subjects whose data is not taken, for details see data tester
     excluded_subjects = [88,92,100,104,106]
     # Define subjects whose data is taken, namely from 1 to 109 excluding excluded_subjects
-    subjects = [x for x in range(1,2) if (x not in excluded_subjects)]
+    subjects = [x for x in subjects_list if (x not in excluded_subjects)]
     # Define baseline and MI runs for Training Data
     baseline_run = [1]
     mi_runs = [4, 6, 8, 10]

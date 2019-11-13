@@ -5,6 +5,7 @@ __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
 
 import numpy as np
 import os
+from datetime import datetime
 # pyEDFlib is a python library to read/write EDF+/BDF+ files based on EDFlib.
 import pyedflib
 # our functions to test and load data
@@ -13,6 +14,7 @@ import get_4class as get
 # tensorflow part
 from tensorflow.keras import utils as np_utils
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras import optimizers
 # EEGNet models
 import models as models
 from sklearn.model_selection import StratifiedKFold
@@ -23,6 +25,11 @@ from sklearn.model_selection import StratifiedKFold
 
 # Set data parameters
 PATH = "../files/"
+
+current_time = datetime.now()
+results_dir=f'{current_time.year}-{current_time.month}-{current_time.day}--{current_time.hour}-{current_time.minute}--lr'
+os.mkdir (results_dir)
+        
 
 # Load data
 X_Train, y_Train = get.get_data(PATH)
@@ -38,7 +45,7 @@ y_Train_cat      = np_utils.to_categorical(y_Train)
 # using 5 folds
 kf = StratifiedKFold(n_splits = 5)
 
-alphas = [10**i for i in range(-3,4)]
+alphas = [10**i for i in range(-3,1)]
 results = np.zeros(len(alphas))
 
 # create a 2D array for fold creation. # 640 is here the sample size.
@@ -53,11 +60,12 @@ for i in range(len(alphas)):
     for train, test in kf.split(x_train_aux, y_Train):
 
         # creating the model every time?
-        model = models.EEGNet(nb_classes = 4, Chans=64, Samples=SAMPLE_SIZE, regRate=alphas[i],
-                        dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout')
+        model = models.EEGNet(nb_classes = 4, Chans=64, Samples=SAMPLE_SIZE, regRate=0.25,
+                        dropoutRate=0.2, kernLength=128, numFilters=8, dropoutType='Dropout')
         
-        # compile the model and set the optimizers
-        model.compile(loss='categorical_crossentropy', optimizer='adam', 
+        # compile the model and set the optimizers - Find optimal learning rate between 10e-3 and 10e0
+        adam_alpha = optimizers.Adam(learning_rate=alphas[i]) # originally: optimizer='adam'
+        model.compile(loss='categorical_crossentropy', optimizer=adam_alpha, 
                         metrics = ['accuracy'])
 
         # count number of parameters in the model
@@ -83,11 +91,14 @@ for i in range(len(alphas)):
         import pandas as pd 
         pd.DataFrame(np_array).to_csv("path/to/file.csv")
         '''
-
+        training_accuracies = f'{results_dir}/train_lr[{alphas[i]}]_dr[0.2]_split[{counter}].csv'
+        validation_accuracies = f'{results_dir}/valid_lr[{alphas[i]}]_dr[0.2]_split[{counter}].csv'
+        '''
         name_for_train_acc = "csv_files/train_param_alpha" + str(i) + "split" + str(counter) + ".csv"
         name_for_val_acc = "csv_files/test_param_alpha" + str(i) + "split" + str(counter) + ".csv"
-        np.savetxt(name_for_train_acc, history.history['accuracy'])
-        np.savetxt(name_for_val_acc, history.history['val_accuracy'])
+        '''
+        np.savetxt(training_accuracies, history.history['accuracy'])
+        np.savetxt(validation_accuracies, history.history['val_accuracy'])
 
         # can be commented out because history object gives the same result for each epoch.
         '''
