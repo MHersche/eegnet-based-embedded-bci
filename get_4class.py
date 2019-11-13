@@ -17,7 +17,7 @@ import statistics as stats
 __author__ = "Batuhan Tomekce and Burak Alp Kaya"
 __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
 
-def get_data(PATH, long = False, normalization = 0,subjects_list=range(1,2)):
+def get_data(PATH, long = False, normalization = 0,subjects_list=range(1,110)):
     '''
     Keyword arguments:
     PATH: path to directory under which the test data lies.

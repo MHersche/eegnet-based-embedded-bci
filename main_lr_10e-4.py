@@ -34,6 +34,17 @@ os.mkdir (results_dir)
 
 # Load data
 X_Train, y_Train = get.get_data(PATH)
+
+X_Train.shape[0].tofile('X_Train_shape_0')
+X_Train.shape[1].tofile('X_Train_shape_1')
+X_Train.shape[2].tofile('X_Train_shape_2')
+
+y_Train.shape[0].tofile('y_Train_shape_0')
+y_Train.shape[1].tofile('y_Train_shape_1')
+y_Train.shape[2].tofile('y_Train_shape_2')
+
+X_Train.tofile('/scratch/gra19h3/X_Train.np')
+y_Train.tofile('/scratch/gra19h3/y_Train.np')
 # Expand dimensions to match expected EEGNet input
 X_Train_real = (np.expand_dims(X_Train, axis=1))
 
@@ -46,7 +57,7 @@ y_Train_cat      = np_utils.to_categorical(y_Train)
 # using 5 folds
 kf = StratifiedKFold(n_splits = 5)
 
-alphas = [10**i for i in range(-3,1)]
+alphas = [10**i for i in range(-4,-3)]
 results = np.zeros(len(alphas))
 
 # create a 2D array for fold creation. # 640 is here the sample size.
