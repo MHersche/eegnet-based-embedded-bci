@@ -12,6 +12,7 @@ import os
 
 # to calculate mean and the standard deviation
 import statistics as stats
+import random
 
 
 __author__ = "Batuhan Tomekce and Burak Alp Kaya"
@@ -127,12 +128,13 @@ def read_data(subjects , runs, PATH, long=False):
         Window_Length = int(160 * 6) # 6s Trials: 960 samples 
     '''
     
-    # initialize empty arrays to concatanate with itself later
-    X = np.empty((0,NO_channels,Window_Length))
-    y = np.empty(0)
+
     
     if not long:
         Window_Length = int(160 * 3) # 3s Trials: 480 samples
+        # initialize empty arrays to concatanate with itself later
+        X = np.empty((0,NO_channels,Window_Length))
+        y = np.empty(0)
         for subject in subjects:
             #For each subject, a certain number of trials from each class should be extracted
             counter_0 = 0
@@ -216,6 +218,9 @@ def read_data(subjects , runs, PATH, long=False):
 
     else:
         Window_Length = int(160) # 1s Trials: 480 samples
+        # initialize empty arrays to concatanate with itself later
+        X = np.empty((0,NO_channels,Window_Length*6))
+        y = np.empty(0)
         for subject in subjects:
             #For each subject, a certain number of trials from each class should be extracted
             counter_0 = 0
@@ -246,6 +251,8 @@ def read_data(subjects , runs, PATH, long=False):
                 # Get Label information
                 annotations = f.readAnnotations()
                 
+                length = f.file_duration
+                
                 # close the file
                 f.close()
                 
@@ -254,38 +261,43 @@ def read_data(subjects , runs, PATH, long=False):
                 points = freq*annotations[0]
                 
                 labels_int = np.empty(0)
-                data_step = np.empty((0,NO_channels, Window_Length))             
+                data_step = np.empty((0,NO_channels, Window_Length*6))             
                 
                 if run in second_set:
                     for ii in range(0,np.size(labels)):
-                        if(labels[ii] == 'T0' and counter_0 < NO_trials):
-                            continue
-                            counter_0 += 1
-                            labels_int = np.append(labels_int,[0])
-                            
-                        elif(labels[ii] == 'T2' and counter_F < NO_trials):
-                            counter_F += 1
-                            labels_int = np.append(labels_int,[3])
-                            # change data shape and seperate events
-                            data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii])-Window_Length:int(points[ii])+ 5*Window_Length])[None]))        
-                    
+                        if(int(points[ii]) + 5*Window_Length < length*160):
+                                
+                            if(labels[ii] == 'T0' and counter_0 < NO_trials):
+                                continue
+                                counter_0 += 1
+                                labels_int = np.append(labels_int,[0])
+                                
+                            elif(labels[ii] == 'T2' and counter_F < NO_trials):
+                                counter_F += 1
+                                labels_int = np.append(labels_int,[3])
+                                # change data shape and seperate events
+                                data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii])-Window_Length:int(points[ii])+ 5*Window_Length])[None]))        
+                        else:
+                            print(f'out of bounds: {points[ii]} + {5*Window_Length} > {length*160}')
                 elif run in first_set:
                     for ii in range(0,np.size(labels)):
-                        if(labels[ii] == 'T0' and counter_0 < NO_trials):
-                            continue
-                            counter_0 += 1
-                            labels_int = np.append(labels_int, [0])
-                            
-                        elif(labels[ii] == 'T1' and counter_L < NO_trials):
-                            counter_L += 1
-                            labels_int = np.append(labels_int, [1])
-                            data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii])-Window_Length:int(points[ii])+Window_Length*5])[None]))
-                            
-                        elif(labels[ii] == 'T2' and counter_R < NO_trials):
-                            counter_R += 1
-                            labels_int = np.append(labels_int, [2])
-                            data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii])-Window_Length:int(points[ii])+Window_Length*5])[None]))
-                            
+                        if(int(points[ii]) + 5*Window_Length < length*160):
+                            if(labels[ii] == 'T0' and counter_0 < NO_trials):
+                                continue
+                                counter_0 += 1
+                                labels_int = np.append(labels_int, [0])
+                                
+                            elif(labels[ii] == 'T1' and counter_L < NO_trials):
+                                counter_L += 1
+                                labels_int = np.append(labels_int, [1])
+                                data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii])-Window_Length:int(points[ii])+Window_Length*5])[None]))
+                                
+                            elif(labels[ii] == 'T2' and counter_R < NO_trials):
+                                counter_R += 1
+                                labels_int = np.append(labels_int, [2])
+                                data_step = np.vstack((data_step, np.array(sigbufs[:,int(points[ii])-Window_Length:int(points[ii])+Window_Length*5])[None]))
+                        else:
+                            print(f'out of bounds: {points[ii]} + {5*Window_Length} > {length*160}')          
                 elif run in baseline:
                     for ii in range(0,NO_trials):
                         index_begin = random.randint(0,54)
