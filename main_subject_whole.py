@@ -29,10 +29,10 @@ PATH = "../files/"
 PATH_model = 'global_model_training.h5'
 
 current_time = datetime.now()
-results_dir=f'{current_time.year:04}_{current_time.month:02}_{current_time.day:02}_{current_time.hour:02}_{current_time.minute:02}__subject_whole_50_epochs'
+results_dir=f'{current_time.month:02}_{current_time.day:02}_{current_time.hour:02}_{current_time.minute:02}__subject_whole_50_epochs'
 os.mkdir (results_dir)
 
-excluded_subjects = [88,92,100,104,106]
+excluded_subjects = [88,92,100,104]
 
 for subject_id in range(1,110):
 	# Do not do subject-specific training on subjects whose data is irregular
@@ -63,19 +63,19 @@ for subject_id in range(1,110):
 	history = model.fit(X_Train_real, y_Train_cat, validation_data = (X_Test_real, y_Test_cat), batch_size = 16, epochs = 50, verbose = 2)
 
 	# save results
-	subject_str = '{0:03d}'.format(subject_id)
-	first_eval_both     = f'{results_dir}/{subject_str}_first_both_glocal.csv'
-	training_accuracies = f'{results_dir}/{subject_str}_train_accu_global.csv'
-	test_accuracies     = f'{results_dir}/{subject_str}_test-_accu_global.csv'
-	training_losses     = f'{results_dir}/{subject_str}_train_loss_global.csv'
-	test_losses         = f'{results_dir}/{subject_str}_test-_loss_global.csv'
+	subject_str     = '{0:03d}'.format(subject_id)
+	first_eval_both = f'{results_dir}/{subject_str}_first_both_glocal.csv'
+	train_accu_str  = f'{results_dir}/{subject_str}_train_accu_global.csv'
+	test_accu_str   = f'{results_dir}/{subject_str}_test-_accu_global.csv'
+	train_loss_str  = f'{results_dir}/{subject_str}_train_loss_global.csv'
+	test_loss_str   = f'{results_dir}/{subject_str}_test-_loss_global.csv'
 	
 	np.savetxt(first_eval_both, first_eval)
 	
-	np.savetxt(training_accuracies, history.history['acc'])
-	np.savetxt(test_accuracies, history.history['val_acc'])
-	np.savetxt(training_losses, history.history['loss'])
-	np.savetxt(test_losses, history.history['val_loss'])
+	np.savetxt(train_accu_str, history.history['acc'])
+	np.savetxt(test_accu_str, history.history['val_acc'])
+	np.savetxt(train_loss_str, history.history['loss'])
+	np.savetxt(test_loss_str, history.history['val_loss'])
 
 	###############################################################################
 	# make prediction on test set. 
