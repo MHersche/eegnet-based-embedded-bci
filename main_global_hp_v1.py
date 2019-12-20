@@ -122,10 +122,10 @@ train_loss = np.zeros(n_epochs)
 valid_loss = np.zeros(n_epochs)
 split_ctr = 0
 for train, test in kf.split(X_Train_real, y_Train):
-    train_accu_step = np.loadtxt(train_accu_str)
-    valid_accu_step = np.loadtxt(valid_accu_str)
-    train_loss_step = np.loadtxt(train_loss_str)
-    valid_loss_step = np.loadtxt(valid_loss_str)
+    train_accu_step = np.loadtxt(f'{results_dir}/stats/train_accu_split_{split_ctr}_v1.csv')
+    valid_accu_step = np.loadtxt(f'{results_dir}/stats/valid_accu_split_{split_ctr}_v1.csv')
+    train_loss_step = np.loadtxt(f'{results_dir}/stats/train_loss_split_{split_ctr}_v1.csv')
+    valid_loss_step = np.loadtxt(f'{results_dir}/stats/valid_loss_split_{split_ctr}_v1.csv')
     
     train_accu += train_accu_step
     valid_accu += valid_accu_step
