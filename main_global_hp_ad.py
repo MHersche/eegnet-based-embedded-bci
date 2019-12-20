@@ -89,7 +89,7 @@ for train, test in kf.split(X_Train_real, y_Train):
     # creating a history object
     history = model.fit(X_Train_real[train], y_Train_cat[train], 
             validation_data=(X_Train_real[test], y_Train_cat[test]),
-            batch_size = 16, epochs = n_epochs, callbacks=lrate, verbose = 2)
+            batch_size = 16, epochs = n_epochs, callbacks=[lrate], verbose = 2)
 
     # Save metrics
     train_accu_str = f'{results_dir}/stats/train_accu_split_{split_ctr}_v0.csv'
@@ -104,7 +104,7 @@ for train, test in kf.split(X_Train_real, y_Train):
 
     #Save model
     print('Saving model...')
-    model.save(f'{results_dir}/model/global_class_{num_classes}_split_{split_ctr}_dr_0{dr}.h5')
+    model.save(f'{results_dir}/model/global_class_{num_classes}_split_{split_ctr}_v0.h5')
 
     #Clear Models
     K.clear_session()
@@ -142,7 +142,7 @@ np.savetxt(f'{results_dir}/stats/valid_loss_v0_avg.csv', valid_loss)
 # Plot Accuracy 
 plt.plot(train_accu, label='Training')
 plt.plot(valid_accu, label='Validation')
-plt.title(f'Accuracy: LR=10^-4, DR=0.{dr}')
+plt.title(f'Accuracy: LR: 20-30-50, DR=0.2')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.legend()
@@ -151,7 +151,7 @@ plt.clf()
 # Plot Loss
 plt.plot(train_loss, label='Training')
 plt.plot(valid_loss, label='Validation')
-plt.title(f'Loss: LR=10^-4, DR=0.{dr}')
+plt.title(f'Loss: LR: 20-30-50, DR=0.2')
 plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
