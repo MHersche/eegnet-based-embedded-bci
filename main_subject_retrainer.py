@@ -23,6 +23,7 @@ from keras import backend as K
 # EEGNet models
 import models as models
 from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
 # tools for plotting confusion matrices
 #from matplotlib import pyplot as plt
@@ -74,7 +75,7 @@ for num_classes in num_classes_list:
     n_epochs = 10
 
     split_ctr = 0
-    for train_global, test_global in kf_global.split(X_Train_real, y_Train):
+    for train_global, test_global in kf_global.split(subjects):
         for sub_idx in test_global:
             subject = subjects[sub_idx]
             X_sub, y_sub = get.get_data(PATH, n_classes=num_classes, subjects_list=[subject])
@@ -87,7 +88,7 @@ for num_classes in num_classes_list:
             for train_sub, test_sub in kf_subject.split(X_sub, y_sub):
                 print(f'N_Classes:{num_classes}, Model: {split_ctr} \n Subject: {subject:03d}, Split: {sub_split_ctr}')
                 model = load_model(f'global_models/model/global_class_{num_classes}_split_{split_ctr}_v1.h5')
-                first_eval = model.evaluate(X_sub, y_sub_cat, batch_size=16) 
+                first_eval = model.evaluate(X_sub[test_sub], y_sub_cat[test_sub], batch_size=16) 
                 train_accu = np.array([])
                 valid_accu = np.array([])
                 train_loss = np.array([])
@@ -127,10 +128,11 @@ for num_classes in num_classes_list:
 
                 #Clear Models
                 K.clear_session()
+                sub_split_ctr = sub_split_ctr + 1
         split_ctr = split_ctr + 1
 for num_classes in num_classes_list:
     split_ctr = 0
-    for train_global, test_global in kf_global.split(X_Train_real, y_Train):
+    for train_global, test_global in kf_global.split(subjects):
         for sub_idx in test_global:
             subject = subjects[sub_idx]
             train_accu = np.zeros(n_epochs+1)
