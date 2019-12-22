@@ -103,8 +103,8 @@ for num_classes in num_classes_list:
         np.savetxt(valid_loss_str, valid_loss)
 
         #Save model
-        print('Saving model...')
-        model.save(f'{results_dir}/model/global_class_{num_classes}_split_{split_ctr}_v1.h5')
+        #print('Saving model...')
+        #model.save(f'{results_dir}/model/global_class_{num_classes}_split_{split_ctr}_v1.h5')
 
         #Clear Models
         K.clear_session()
@@ -129,8 +129,8 @@ for num_classes in num_classes_list:
 
         # Plot Accuracy 
         plt.ylim(0,1)
-        plt.plot(train_accu, label='Training')
-        plt.plot(valid_accu, label='Validation')
+        plt.plot(train_accu_step, label='Training')
+        plt.plot(valid_accu_step, label='Validation')
         plt.title(f'{num_classes}-Class Acc.: LR: 20-30-50, DR=0.2')
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
@@ -138,8 +138,8 @@ for num_classes in num_classes_list:
         plt.savefig(f'{results_dir}/plots/accu_{num_classes}_c_global_{split_ctr}.pdf')
         plt.clf()
         # Plot Loss
-        plt.plot(train_loss, label='Training')
-        plt.plot(valid_loss, label='Validation')
+        plt.plot(train_loss_step, label='Training')
+        plt.plot(valid_loss_step, label='Validation')
         plt.title(f'{num_classes}-Class Loss: LR: 20-30-50, DR=0.2')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
