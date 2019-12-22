@@ -165,20 +165,19 @@ for num_classes in num_classes_list:
             # Plot Accuracy 
             plt.plot(train_accu, label='Training')
             plt.plot(valid_accu, label='Validation')
-            plt.title(f'S:{sub_str} Acc.: LR: 2-3-5, DR=0.2')
+            plt.title(f'S:{sub_str} C:{num_classes} Acc.: LR: 2-3-5, DR=0.2')
             plt.xlabel('Epochs')
             plt.ylabel('Accuracy')
             plt.legend()
-            plt.savefig(f'{results_dir}/plots/accu_global_avg.pdf')
+            plt.savefig(f'{results_dir}/plots/accu_avg_{num_classes}_c_{sub_str}.pdf')
             plt.clf()
             # Plot Loss
             plt.plot(train_loss, label='Training')
             plt.plot(valid_loss, label='Validation')
-            plt.title(f'S:{sub_str} Loss: LR: 2-3-5, DR=0.2')
+            plt.title(f'S:{sub_str} C:{num_classes} Loss: LR: 2-3-5, DR=0.2')
             plt.xlabel('Epochs')
             plt.ylabel('Loss')
             plt.legend()
-            plt.savefig(f'{results_dir}/plots/loss_global_avg.pdf')
+            plt.savefig(f'{results_dir}/plots/loss_avg_{num_classes}_c_{sub_str}.pdf')
             plt.clf()
-
         split_ctr = split_ctr + 1
