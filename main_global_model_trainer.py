@@ -92,10 +92,10 @@ for num_classes in num_classes_list:
             valid_loss = np.append(valid_loss, history.history['val_loss'])
 
         # Save metrics
-        train_accu_str = f'{results_dir}/stats/train_accu_split_{split_ctr}_v1.csv'
-        valid_accu_str = f'{results_dir}/stats/valid_accu_split_{split_ctr}_v1.csv'
-        train_loss_str = f'{results_dir}/stats/train_loss_split_{split_ctr}_v1.csv'
-        valid_loss_str = f'{results_dir}/stats/valid_loss_split_{split_ctr}_v1.csv'
+        train_accu_str = f'{results_dir}/stats/train_accu_v1_class_{num_classes}_split_{split_ctr}.csv'
+        valid_accu_str = f'{results_dir}/stats/valid_accu_v1_class_{num_classes}_split_{split_ctr}.csv'
+        train_loss_str = f'{results_dir}/stats/train_loss_v1_class_{num_classes}_split_{split_ctr}.csv'
+        valid_loss_str = f'{results_dir}/stats/valid_loss_v1_class_{num_classes}_split_{split_ctr}.csv'
          
         np.savetxt(train_accu_str, train_accu)
         np.savetxt(valid_accu_str, valid_accu)
@@ -116,47 +116,65 @@ for num_classes in num_classes_list:
     valid_accu = np.zeros(n_epochs)
     train_loss = np.zeros(n_epochs)
     valid_loss = np.zeros(n_epochs)
-    split_ctr = 0
-    for train, test in kf.split(X_Train_real, y_Train):
-        train_accu_step = np.loadtxt(f'{results_dir}/stats/train_accu_split_{split_ctr}_v1.csv')
-        valid_accu_step = np.loadtxt(f'{results_dir}/stats/valid_accu_split_{split_ctr}_v1.csv')
-        train_loss_step = np.loadtxt(f'{results_dir}/stats/train_loss_split_{split_ctr}_v1.csv')
-        valid_loss_step = np.loadtxt(f'{results_dir}/stats/valid_loss_split_{split_ctr}_v1.csv')
+    for split_ctr in range(0,num_splits):
+        train_accu_step = np.loadtxt(f'{results_dir}/stats/train_accu_v1_class_{num_classes}_split_{split_ctr}.csv')
+        valid_accu_step = np.loadtxt(f'{results_dir}/stats/valid_accu_v1_class_{num_classes}_split_{split_ctr}.csv')
+        train_loss_step = np.loadtxt(f'{results_dir}/stats/train_loss_v1_class_{num_classes}_split_{split_ctr}.csv')
+        valid_loss_step = np.loadtxt(f'{results_dir}/stats/valid_loss_v1_class_{num_classes}_split_{split_ctr}.csv')
         
         train_accu += train_accu_step
         valid_accu += valid_accu_step
         train_loss += train_loss_step
         valid_loss += valid_loss_step
 
-        split_ctr = split_ctr + 1
-
+        # Plot Accuracy 
+        plt.ylim(0,1)
+        plt.plot(train_accu, label='Training')
+        plt.plot(valid_accu, label='Validation')
+        plt.title(f'{num_classes}-Class Acc.: LR: 20-30-50, DR=0.2')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.legend()
+        plt.savefig(f'{results_dir}/plots/accu_{num_classes}_c_global_{split_ctr}.pdf')
+        plt.clf()
+        # Plot Loss
+        plt.plot(train_loss, label='Training')
+        plt.plot(valid_loss, label='Validation')
+        plt.title(f'{num_classes}-Class Loss: LR: 20-30-50, DR=0.2')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.savefig(f'{results_dir}/plots/loss_{num_classes}_c_global_{split_ctr}.pdf')
+        plt.clf()
+    
     train_accu = train_accu/num_splits
     valid_accu = valid_accu/num_splits
     train_loss = train_loss/num_splits
     valid_loss = valid_loss/num_splits
 
-    np.savetxt(f'{results_dir}/stats/train_accu_v1_avg.csv', train_accu)
-    np.savetxt(f'{results_dir}/stats/valid_accu_v1_avg.csv', valid_accu)
-    np.savetxt(f'{results_dir}/stats/train_loss_v1_avg.csv', train_loss)
-    np.savetxt(f'{results_dir}/stats/valid_loss_v1_avg.csv', valid_loss)
+    np.savetxt(f'{results_dir}/stats/train_accu_v1_class_{num_classes}_avg.csv', train_accu)
+    np.savetxt(f'{results_dir}/stats/valid_accu_v1_class_{num_classes}_avg.csv', valid_accu)
+    np.savetxt(f'{results_dir}/stats/train_loss_v1_class_{num_classes}_avg.csv', train_loss)
+    np.savetxt(f'{results_dir}/stats/valid_loss_v1_class_{num_classes}_avg.csv', valid_loss)
 
     # Plot Accuracy 
+    plt.ylim(0,1)
     plt.plot(train_accu, label='Training')
     plt.plot(valid_accu, label='Validation')
-    plt.title(f'Accuracy: LR: 20-30-50, DR=0.2')
+    plt.title(f'{num_classes}-Class Acc.: LR: 20-30-50, DR=0.2')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig(f'{results_dir}/plots/accu_global_avg.pdf')
+    plt.savefig(f'{results_dir}/plots/accu_avg_{num_classes}_c_global.pdf')
     plt.clf()
     # Plot Loss
     plt.plot(train_loss, label='Training')
     plt.plot(valid_loss, label='Validation')
-    plt.title(f'Loss: LR: 20-30-50, DR=0.2')
+    plt.title(f'{num_classes}-Class Loss: LR: 20-30-50, DR=0.2')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(f'{results_dir}/plots/loss_global_avg.pdf')
+    plt.savefig(f'{results_dir}/plots/loss_avg_{num_classes}_c_global.pdf')
     plt.clf()
 
 
