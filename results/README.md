@@ -10,14 +10,23 @@ used as validation data for each of the 4 folds.
 4-class data is used exclusively.
 
 Hyperparameter search was done on: 
-* Dropout Rate: 0.1, **0.2**, 0.3, 0.4
-* Learning Rate: 10^-1, 10^-2, 10^-3, **10^-4**, 10^-5
+* Dropout Rate: 0.1, 0.2, 0.3, 0.4
+* Learning Rate: 10^-1, 10^-2, 10^-3, 10^-4, 10^-5
 * Number of Epochs for different Learning Rates
 * Constant and Sparse Learning Rate Schedulers for the [Adam Optimizer](https://arxiv.org/abs/1412.6980) 
 
 Results:
 * Dropout Rate=0.2
+    * [DR=0.1](/results/hp_tuning/global_trainer_hp_dr/stats/valid_accu_dr_01_avg.csv): 62.54%
+    * [DR=0.2](/results/hp_tuning/global_trainer_hp_dr/stats/valid_accu_dr_02_avg.csv): 63.75%
+    * [DR=0.3](/results/hp_tuning/global_trainer_hp_dr/stats/valid_accu_dr_03_avg.csv): 62.54%
+    * [DR=0.4](/results/hp_tuning/global_trainer_hp_dr/stats/valid_accu_dr_04_avg.csv): 61.41%
 * For a single Learning Rate: LR=10^-4
+    * [LR=10^-1](/results/hp_tuning/global_trainer_hp_lr/stats/valid_accu_lr_1e--1_avg.csv): 41.75%
+    * [LR=10^-2](/results/hp_tuning/global_trainer_hp_lr/stats/valid_accu_lr_1e--2_avg.csv): 56.90%
+    * [LR=10^-3](/results/hp_tuning/global_trainer_hp_lr/stats/valid_accu_lr_1e--3_avg.csv): 57.85%
+    * [LR=10^-4](/results/hp_tuning/global_trainer_hp_lr/stats/valid_accu_lr_1e--4_avg.csv): 62.54%
+    * [LR=10^-5](/results/hp_tuning/global_trainer_hp_lr/stats/valid_accu_lr_1e--5_avg.csv): 61.39%
 * For Learning Rate Scheduler: A Sparse LR Scheduler with:
     * LR=10^-3 for 20 epochs
     * LR=10^-4 for 30 epochs
