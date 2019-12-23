@@ -7,14 +7,23 @@ Below are the acquired results for each individual subject with 500 epochs:
 
 
 Classification accuracy of 1  : 0.779359
+
 Classification accuracy of 2  : 0.579505
+
 Classification accuracy of 3  : 0.930403
+
 Classification accuracy of 4  : 0.618421
+
 Classification accuracy of 5  : 0.615942
+
 Classification accuracy of 6  : 0.502326
+
 Classification accuracy of 7  : 0.815884
+
 Classification accuracy of 8  : 0.793358
+
 Classification accuracy of 9  : 0.738636
+
 General accuracy: 0.708204
 
 
