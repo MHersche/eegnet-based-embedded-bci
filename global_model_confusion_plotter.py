@@ -63,9 +63,10 @@ for num_classes in num_classes_list:
         bottom, top = ax.get_ylim()
         ax.set_ylim(bottom + 0.5, top - 0.5)
         plt.savefig(f'global_models/plots/conf_{num_classes}_global_0.pdf')
-
+        plt.clf()
         df_cm_norm = df_cm /df_cm.sum(axis=1)
         ax = sn.heatmap(df_cm_norm,annot=True)
         bottom, top = ax.get_ylim()
         ax.set_ylim(bottom + 0.5, top - 0.5)
         plt.savefig(f'global_models/plots/conf_norm_{num_classes}_global_0.pdf')
+        plt.clf()
