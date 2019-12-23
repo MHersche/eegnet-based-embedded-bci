@@ -31,25 +31,20 @@ import matplotlib.pyplot as plt
 
 #################################################
 #
-# LEARNING RATE SCHEDULER
+# Learning Rate Sparse Scheduling
 #
 #################################################
 
-def step_decay(epoch):
-    if(epoch < 20):
-        lr = 0.01
-    elif(epoch < 50):
-        lr = 0.001
-    else:
-        lr = 0.0001
-    return lr
-lrate = LearningRateScheduler(step_decay)
+# Number of epochs to use with 10^[-3,-4,-5] Learning Rate
+epochs = [20,30,50]
+lrates = [-3,-4,-5]
+
 
 # Set data parameters
 PATH = "../files/"
 
 current_time = datetime.now()
-results_dir=f'global_trainer_hp_v0'
+results_dir=f'global_trainer_hp_v11'
 #os.makedirs(results_dir, exist_ok=True)
 os.makedirs(f'{results_dir}/stats', exist_ok=True)
 os.makedirs(f'{results_dir}/model', exist_ok=True)
@@ -79,32 +74,44 @@ n_epochs = 100
 
 split_ctr = 0
 for train, test in kf.split(X_Train_real, y_Train):
-    
-    print(f'Split = {split_ctr}')
+    train_accu = np.array([])
+    valid_accu = np.array([])
+    train_loss = np.array([])
+    valid_loss = np.array([])
+    epoch_number = 0    
+    np.random.seed(42)
+    np.random.shuffle(train)
     model = models.EEGNet(nb_classes = num_classes, Chans=64, Samples=SAMPLE_SIZE, regRate=0.25,
                     dropoutRate=0.2, kernLength=128, numFilters=8, dropoutType='Dropout')
-    # Set Learning Rate
-    adam_alpha = Adam(lr=(0.0001))
-    model.compile(loss='categorical_crossentropy', optimizer=adam_alpha, metrics = ['accuracy'])
-    # creating a history object
-    history = model.fit(X_Train_real[train], y_Train_cat[train], 
-            validation_data=(X_Train_real[test], y_Train_cat[test]),
-            batch_size = 16, epochs = n_epochs, callbacks=[lrate], verbose = 2)
+    print(f'Split = {split_ctr}')
+    for j, lrate in enumerate(lrates):
+        # Set Learning Rate
+        adam_alpha = Adam(lr=(10**lrate))
+        model.compile(loss='categorical_crossentropy', optimizer=adam_alpha, metrics = ['accuracy'])
+        # creating a history object
+        history = model.fit(X_Train_real[train], y_Train_cat[train], 
+                validation_data=(X_Train_real[test], y_Train_cat[test]),
+                batch_size = 16, epochs = epochs[j], verbose = 2)
+        train_accu = np.append(train_accu, history.history['acc'])
+        valid_accu = np.append(valid_accu, history.history['val_acc'])
+        train_loss = np.append(train_loss, history.history['loss'])
+        valid_loss = np.append(valid_loss, history.history['val_loss'])
+
 
     # Save metrics
-    train_accu_str = f'{results_dir}/stats/train_accu_split_{split_ctr}_v0.csv'
-    valid_accu_str = f'{results_dir}/stats/valid_accu_split_{split_ctr}_v0.csv'
-    train_loss_str = f'{results_dir}/stats/train_loss_split_{split_ctr}_v0.csv'
-    valid_loss_str = f'{results_dir}/stats/valid_loss_split_{split_ctr}_v0.csv'
+    train_accu_str = f'{results_dir}/stats/train_accu_split_{split_ctr}_v1.csv'
+    valid_accu_str = f'{results_dir}/stats/valid_accu_split_{split_ctr}_v1.csv'
+    train_loss_str = f'{results_dir}/stats/train_loss_split_{split_ctr}_v1.csv'
+    valid_loss_str = f'{results_dir}/stats/valid_loss_split_{split_ctr}_v1.csv'
      
-    np.savetxt(train_accu_str, history.history['acc'])
-    np.savetxt(valid_accu_str, history.history['val_acc'])
-    np.savetxt(train_loss_str, history.history['loss'])
-    np.savetxt(valid_loss_str, history.history['val_loss'])
+    np.savetxt(train_accu_str, train_accu)
+    np.savetxt(valid_accu_str, valid_accu)
+    np.savetxt(train_loss_str, train_loss)
+    np.savetxt(valid_loss_str, valid_loss)
 
     #Save model
     print('Saving model...')
-    model.save(f'{results_dir}/model/global_class_{num_classes}_split_{split_ctr}_v0.h5')
+    model.save(f'{results_dir}/model/global_class_{num_classes}_split_{split_ctr}_v1.h5')
 
     #Clear Models
     K.clear_session()
@@ -115,26 +122,29 @@ train_accu = np.zeros(n_epochs)
 valid_accu = np.zeros(n_epochs)
 train_loss = np.zeros(n_epochs)
 valid_loss = np.zeros(n_epochs)
-for split_ctr in range(num_splits):
-    train_accu_step = np.loadtxt(f'{results_dir}/stats/train_accu_split_{split_ctr}_v0.csv')
-    valid_accu_step = np.loadtxt(f'{results_dir}/stats/valid_accu_split_{split_ctr}_v0.csv')
-    train_loss_step = np.loadtxt(f'{results_dir}/stats/train_loss_split_{split_ctr}_v0.csv')
-    valid_loss_step = np.loadtxt(f'{results_dir}/stats/valid_loss_split_{split_ctr}_v0.csv')
+split_ctr = 0
+for train, test in kf.split(X_Train_real, y_Train):
+    train_accu_step = np.loadtxt(f'{results_dir}/stats/train_accu_split_{split_ctr}_v1.csv')
+    valid_accu_step = np.loadtxt(f'{results_dir}/stats/valid_accu_split_{split_ctr}_v1.csv')
+    train_loss_step = np.loadtxt(f'{results_dir}/stats/train_loss_split_{split_ctr}_v1.csv')
+    valid_loss_step = np.loadtxt(f'{results_dir}/stats/valid_loss_split_{split_ctr}_v1.csv')
     
     train_accu += train_accu_step
     valid_accu += valid_accu_step
     train_loss += train_loss_step
     valid_loss += valid_loss_step
 
+    split_ctr = split_ctr + 1
+
 train_accu = train_accu/num_splits
 valid_accu = valid_accu/num_splits
 train_loss = train_loss/num_splits
 valid_loss = valid_loss/num_splits
 
-np.savetxt(f'{results_dir}/stats/train_accu_v0_avg.csv', train_accu)
-np.savetxt(f'{results_dir}/stats/valid_accu_v0_avg.csv', valid_accu)
-np.savetxt(f'{results_dir}/stats/train_loss_v0_avg.csv', train_loss)
-np.savetxt(f'{results_dir}/stats/valid_loss_v0_avg.csv', valid_loss)
+np.savetxt(f'{results_dir}/stats/train_accu_v1_avg.csv', train_accu)
+np.savetxt(f'{results_dir}/stats/valid_accu_v1_avg.csv', valid_accu)
+np.savetxt(f'{results_dir}/stats/train_loss_v1_avg.csv', train_loss)
+np.savetxt(f'{results_dir}/stats/valid_loss_v1_avg.csv', valid_loss)
 
 # Plot Accuracy 
 plt.plot(train_accu, label='Training')

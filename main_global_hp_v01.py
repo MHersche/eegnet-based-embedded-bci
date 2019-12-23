@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# Remove excluded subjects from subjects list
+def exclude_subjects(all_subjects=range(1,110), excluded_subjects=[88,92,100,104]):
+    subjects = [x for x in all_subjects if (x not in excluded_subjects)]
+    return subjects
 
 __author__ = "Batuhan Tomekce and Burak Alp Kaya"
 __email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
@@ -45,11 +49,16 @@ def step_decay(epoch):
     return lr
 lrate = LearningRateScheduler(step_decay)
 
+# Remove excluded subjects from subjects list
+def exclude_subjects(all_subjects=range(1,110), excluded_subjects=[88,92,100,104]):
+    subjects = [x for x in all_subjects if (x not in excluded_subjects)]
+    return subjects
+
 # Set data parameters
 PATH = "../files/"
 
 current_time = datetime.now()
-results_dir=f'global_trainer_hp_v0'
+results_dir=f'global_trainer_hp_v01'
 #os.makedirs(results_dir, exist_ok=True)
 os.makedirs(f'{results_dir}/stats', exist_ok=True)
 os.makedirs(f'{results_dir}/model', exist_ok=True)
@@ -58,7 +67,7 @@ os.makedirs(f'{results_dir}/plots', exist_ok=True)
 # specify number of classses for input data
 num_classes = 4       
 
-# Load data
+# Using the first 84 subjects' data
 X_Train, y_Train = get.get_data(PATH, n_classes=num_classes, subjects_list=range(1,85))
 
 # Expand dimensions to match expected EEGNet input
@@ -74,12 +83,14 @@ y_Train_cat = np_utils.to_categorical(y_Train)
 num_splits = 4
 kf = KFold(n_splits = num_splits)
 
-
 n_epochs = 100
 
 split_ctr = 0
 for train, test in kf.split(X_Train_real, y_Train):
     
+    np.random.seed(42)
+    np.random.shuffle(train)
+
     print(f'Split = {split_ctr}')
     model = models.EEGNet(nb_classes = num_classes, Chans=64, Samples=SAMPLE_SIZE, regRate=0.25,
                     dropoutRate=0.2, kernLength=128, numFilters=8, dropoutType='Dropout')
