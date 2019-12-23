@@ -44,14 +44,16 @@ Then the model hyperparameters are tuned.
 * Dropout Rate: **0.1**, 0.2, 0.3, 0.4
 * Learning Rate: 10^-1, 10^-2, 10^-3, **10^-4**, 10^-5
 
+The results are in "hyperParameterSearch"
+
 Hyperparameter Tuning is done with 500 epochs using 5-fold Stratified CV so that there are equal number of classes in each fold.
 After we chose the hyperparameters we have done testing with 1000 epochs as the model does not overfit.
-We have reached an accuracy of 68,5% on our test set. 
-Further training our model on data from individual subjects and testing with the data from individual subjects with the same parameters using 10 and 50 epochs. 10 epochs resulted in an average of 70,3% accuracy.
+We have reached an accuracy of 68,5% on our test set. The results are in "3_fold_testing".
+Further training our model on data from individual subjects and testing with the data from individual subjects with the same parameters using 10 and 50 epochs. 10 epochs resulted in an average of 70,3% accuracy. The results are in "global_model_subject_specific".
 
-We also validated the results by doing 3 fold cross validation using the combination of different runs as folds and reached an average accuracy of 68,1%.
+We also validated the results by doing 3 fold cross validation using the combination of different runs as folds and reached an average accuracy of 68,1%. 
 
-After that we have done 5 fold stratified cross validation to the whole dataset with 800 epochs and reached an accuracy of 69,8% averaged on all folds. 
+After that we have done 5 fold stratified cross validation to the whole dataset with 800 epochs and reached an accuracy of 69,8% averaged on all folds. The results are in "5_fold_cv_whole_dataset"
 
 ## Inter-Subject Training
 ---
@@ -91,3 +93,10 @@ for 2-, 3-, and 4-class data
 * Per Subject 4-Fold Cross-Validation Accuracy/Loss
 * Averaged among source global model 4-Fold CV Accuracy/Loss
 * Averaged among all subjects 4-Fold CV Accuracy/Loss
+
+## MCU
+After creating our models we wanted to implement our model in a STM32 M4 microcontroller. Therefore whe have used STMCubeAI tool to pass our model. Our model was too big to fit in the RAM of the device. It required 1 MB ram and we had 128 KB. Therefore made the input of our model smaller. We have tested several different input shapes such as downsampling the frequency, decreasing the channel size and decreasing the duration of the data. At the end we have chosen to decrease the channel size to 19. We have selected the electrodes in 10-20 system from international standard exluding A1 and A2. We have downsampled the input by a factor of 5 and kept the duration of 3 seconds. 
+Validation on the microcontroller and the C-model didn't result in any accuracy decrease.
+
+We have tested our implementation on microcontroller with the first fold of the inter-subject 5 fold cross validation. Decreasing the size of the input resulted in an accuracy decrease from 67% to 62,6%.
+The results are in the folder "mcu". Output of the validation from STMCubeAI can be found in mcu/outputs. The channels we have used can be found in mcu/channels.
