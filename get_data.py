@@ -231,7 +231,7 @@ def read_data(subjects , runs, PATH, long=False):
                         labels_int = np.append(labels_int, [2])
                         data_step = np.vstack((data_step, np.array(sigbufs[:,(ii*Window_Length):((ii+1)*Window_Length)])[None]))
                 np.random.seed(7)
-                index = random.randint(42*freq,57*freq)
+                index = random.randint(0*freq,57*freq)
                 labels_int = np.append(labels_int, [2])
                 data_step = np.vstack((data_step, np.array(sigbufs[:,(index):(index+Window_Length)])[None]))
                 '''
