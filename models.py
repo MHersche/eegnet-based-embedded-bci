@@ -100,7 +100,7 @@ def EEGNet_org(nb_classes, Chans=64, Samples=128, regRate=0.0001,
 ###################################################################
 
 def EEGNet(nb_classes, Chans=64, Samples=128, regRate=.25,
-			   dropoutRate=0.1, kernLength=128, numFilters=8, dropoutType='Dropout'):
+			   dropoutRate=0.1, kernLength=128,poolLength=8, numFilters=8, dropoutType='Dropout'):
 	"""
 
 	Requires Tensorflow >= 1.5 and Keras >= 2.1.3
@@ -149,7 +149,7 @@ def EEGNet(nb_classes, Chans=64, Samples=128, regRate=.25,
 								   depthwise_constraint = max_norm(1.))(block1)
 	block1       = BatchNormalization(axis = 1)(block1)
 	block1       = Activation('elu')(block1)
-	block1       = AveragePooling2D((1, 8))(block1) # changed from 4 to 8
+	block1       = AveragePooling2D((1, poolLength))(block1) # changed from 4 to 8
 	block1       = dropoutType(dropoutRate)(block1)
 	
 	block2       = SeparableConv2D(F2, (1, 16),
