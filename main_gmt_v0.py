@@ -78,12 +78,12 @@ for num_classes in num_classes_list:
         for T in T_vec:
 
             # Load data
-            #X_Train, y_Train = get.get_data(PATH, n_classes=num_classes)
+            X_Train, y_Train = get.get_data(PATH, n_classes=num_classes)
 
             
             #np.savez(PATH+f'{num_classes}class',X_Train = X_Train, y_Train = y_Train)
-            npzfile = np.load(PATH+f'{num_classes}class.npz')
-            X_Train, y_Train = npzfile['X_Train'], npzfile['y_Train']
+            #npzfile = np.load(PATH+f'{num_classes}class.npz')
+            #X_Train, y_Train = npzfile['X_Train'], npzfile['y_Train']
 
             X_Train = eeg_reduction(X_Train,n_ds = n_ds, n_ch = n_ch, T = T)
 
