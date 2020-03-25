@@ -1,15 +1,11 @@
+# Copyright (c) 2020 ETH Zurich, Xiaying Wang, Michael Hersche, Batuhan Toemekce, Burak Kaya, Michele Magno, Luca Benini
 #!/usr/bin/env python3
 
-__author__ = "Batuhan Tomekce and Burak Alp Kaya"
-__email__ = "tbatuhan@ethz.ch, bukaya@ethz.ch"
 
 import numpy as np
 import os
-from datetime import datetime
-# pyEDFlib is a python library to read/write EDF+/BDF+ files based on EDFlib.
-import pyedflib
+
 # our functions to test and load data
-import get_data as get
 #import data_tester as test
 # tensorflow part
 from tensorflow.keras import utils as np_utils
@@ -25,6 +21,7 @@ import models as models
 from sklearn.model_selection import KFold
 from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
+import get_data as get
 # tools for plotting confusion matrices
 #from matplotlib import pyplot as plt
 #from conf_matrix import plot_confusion_matrix
