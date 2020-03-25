@@ -1,6 +1,12 @@
 # Copyright (c) 2020 ETH Zurich, Xiaying Wang, Michael Hersche, Batuhan Toemekce, Burak Kaya, Michele Magno, Luca Benini
 #!/usr/bin/env python3
 
+#################################################
+#
+# Global model training 
+#
+#################################################
+
 
 import numpy as np
 import os
@@ -51,10 +57,8 @@ def save_results(history,num_classes,n_ds,n_ch,T,split_ctr):
     results[3] = history.history['val_loss']
     results_str = f'{results_dir}/stats/global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.csv'
                  
-    np.savetxt(results_str, results)
+    np.savetxt(results_str, np.transpose(results))
     return results[0:2,-1]
-
-
 
 
 
@@ -68,7 +72,7 @@ os.makedirs(f'{results_dir}/plots', exist_ok=True)
 
 # specify number of classses for input data
 num_classes_list = [4]
-n_epochs = 2#100
+n_epochs = 100
 num_splits = 5
 
 # data settings  
@@ -86,11 +90,11 @@ for num_classes in num_classes_list:
         for T in T_list:
 
             # Load data
-            X, y = get.get_data(datapath, n_classes=num_classes)
+            #X, y = get.get_data(datapath, n_classes=num_classes)
 
             #np.savez(datapath+f'{num_classes}class',X_Train = X_Train, y_Train = y_Train)
-            #npzfile = np.load(datapath+f'{num_classes}class.npz')
-            #X, y = npzfile['X_Train'], npzfile['y_Train']
+            npzfile = np.load(datapath+f'{num_classes}class.npz')
+            X, y = npzfile['X_Train'], npzfile['y_Train']
 
             # reduce EEG data (downsample, number of channels, time window)
             X = eeg_reduction(X,n_ds = n_ds, n_ch = n_ch, T = T)
