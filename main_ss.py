@@ -45,15 +45,15 @@ def exclude_subjects(all_subjects=range(1,110), excluded_subjects=[88,92,100,104
 # specific transfer learning
 #
 #################################################
-def step_decay(epoch):
-    if(epoch < 2):
-        lr = 0.01
-    elif(epoch < 5):
-        lr = 0.001
-    else:
-        lr = 0.0001
-    return lr
-lrate = LearningRateScheduler(step_decay)
+# def step_decay(epoch):
+#     if(epoch < 2):
+#         lr = 0.01
+#     elif(epoch < 5):
+#         lr = 0.001
+#     else:
+#         lr = 0.0001
+#     return lr
+# lrate = LearningRateScheduler(step_decay)
 
 #################################################
 #
@@ -80,13 +80,16 @@ def save_results(first_eval,tr_hist,num_classes,sub,split,n_ds,n_ch,T):
     np.savetxt(results_str, np.transpose(results))
     return results[0:2,-1]
 
-
-# Set data path of physionet
+##############################################
+# CHANGE EXPERIMENT NAME FOR DIFFERENT TESTS!!
+ss_experiment = 'your-ss-experiment'
+global_experiment = 'your-global-experiment'
+##############################################
 datapath = "/usr/scratch/xavier/herschmi/EEG_data/physionet/"
-model_path = "../results/trash/model/"
 
+global_model_path = f'results/{global_experiment}/model/'
 # Make necessary directories for files
-results_dir=f'../results/trashss'
+results_dir=f'results/{ss_experiment}'
 os.makedirs(f'{results_dir}/stats', exist_ok=True)
 os.makedirs(f'{results_dir}/model', exist_ok=True)
 os.makedirs(f'{results_dir}/plots', exist_ok=True)
@@ -101,12 +104,15 @@ T = 3
 n_ch = 64
 verbose = 0 # verbosity for data loader and keras: 0 minimum, 
 
+# retraining parameters
+n_epochs = 5
+lr = 1e-3
 
 for num_classes in num_classes_list:
     # using 5 folds
     num_splits = 5
     kf_global = KFold(n_splits = num_splits)
-    n_epochs = 10
+    
     split_ctr = 0
 
     acc = np.zeros((n_subjects,4,2))
@@ -127,15 +133,15 @@ for num_classes in num_classes_list:
             for train_sub, test_sub in kf_subject.split(X_sub, y_sub):
                 
                 # load global model
-                model = load_model(model_path+f'global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.h5')
+                model = load_model(global_model_path+f'global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.h5')
                 first_eval = model.evaluate(X_sub[test_sub], y_sub_cat[test_sub], batch_size=16, verbose = verbose) 
                 
-                adam_alpha = Adam(lr=(0.0001))
+                adam_alpha = Adam(lr=lr)
                 model.compile(loss='categorical_crossentropy', optimizer=adam_alpha, metrics = ['accuracy'])
                 # creating a history object
                 history = model.fit(X_sub[train_sub], y_sub_cat[train_sub], 
                         validation_data=(X_sub[test_sub], y_sub_cat[test_sub]),
-                        batch_size = 16, epochs = n_epochs, callbacks=[lrate], verbose = verbose)
+                        batch_size = 16, epochs = n_epochs,  verbose = verbose) # callbacks=[lrate]
                 
                 # save results
                 acc[sub_idx,sub_split_ctr]=save_results(first_eval,history,num_classes,subject,sub_split_ctr,n_ds,n_ch,T)
@@ -149,5 +155,5 @@ for num_classes in num_classes_list:
         split_ctr = split_ctr + 1
 
 
-    print("AVG\t{:}\t{:}".format(acc[:,:,0].mean(),acc[:,:,1].mean()))
+    print("AVG\t{:.4f}\t{:.4f}".format(acc[:,:,0].mean(),acc[:,:,1].mean()))
 

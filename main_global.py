@@ -3,7 +3,7 @@
 
 #################################################
 #
-# Global model training 
+# Global model training and validation 
 #
 #################################################
 
@@ -62,27 +62,28 @@ def save_results(history,num_classes,n_ds,n_ch,T,split_ctr):
 
 
 
-# Directories
+# CHANGE EXPERIMENT NAME FOR DIFFERENT TESTS!!
+experiment_name = 'your-global-experiment'
+
 datapath = "/usr/scratch/xavier/herschmi/EEG_data/physionet/"
-results_dir=f'../results/trash'
+results_dir=f'results/'
 #os.makedirs(results_dir, exist_ok=True)
-os.makedirs(f'{results_dir}/stats', exist_ok=True)
-os.makedirs(f'{results_dir}/model', exist_ok=True)
-os.makedirs(f'{results_dir}/plots', exist_ok=True)
+os.makedirs(f'{results_dir}{experiment_name}/stats', exist_ok=True)
+os.makedirs(f'{results_dir}{experiment_name}/model', exist_ok=True)
+os.makedirs(f'{results_dir}{experiment_name}/plots', exist_ok=True)
 
-# specify number of classses for input data
-num_classes_list = [4]
-n_epochs = 100
-num_splits = 5
-
-# data settings  
+# HYPERPARAMETER TO SET 
+num_classes_list = [4] # list of number of classes to test {2,3,4}
+n_epochs = 100 # number of epochs for training
 n_ds = 1 # downsamlping factor {1,2,3}
 n_ch_list = [64] # number of channels {8,19,27,38,64}
 T_list = [3] # duration to classify {1,2,3}
-acc = np.zeros((num_splits,2))
+
 # model settings 
 kernLength = int(np.ceil(128/n_ds))
 poolLength = int(np.ceil(8/n_ds))
+num_splits = 5
+acc = np.zeros((num_splits,2))
 
 
 for num_classes in num_classes_list:
@@ -90,11 +91,12 @@ for num_classes in num_classes_list:
         for T in T_list:
 
             # Load data
-            #X, y = get.get_data(datapath, n_classes=num_classes)
+            X, y = get.get_data(datapath, n_classes=num_classes)
 
+            ######## If you want to save the data after loading once from .edf (faster)
             #np.savez(datapath+f'{num_classes}class',X_Train = X_Train, y_Train = y_Train)
-            npzfile = np.load(datapath+f'{num_classes}class.npz')
-            X, y = npzfile['X_Train'], npzfile['y_Train']
+            #npzfile = np.load(datapath+f'{num_classes}class.npz')
+            #X, y = npzfile['X_Train'], npzfile['y_Train']
 
             # reduce EEG data (downsample, number of channels, time window)
             X = eeg_reduction(X,n_ds = n_ds, n_ch = n_ch, T = T)
