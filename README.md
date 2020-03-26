@@ -1,6 +1,5 @@
 Copyright (c) 2020 ETH Zurich, Xiaying Wang, Michael Hersche, Batuhan Toemekce, Burak Kaya, Michele Magno, and Luca Benini
 
-
 # An Accurate EEGNet-based Motor-Imagery Brain--Computer Interface for Low-Power Edge Computing
 
 In this repository, we share the code for classifying MI data of the Physionet EEG Motor Movement/Imagery Dataset using EEGNet. 
@@ -22,6 +21,8 @@ conda env create -f dependency.yml -n mybciEnv
 ```
 Make sure to activate the environment before running any code. 
 
+If get a batchnormalization error when running the code, follow the instructions by gurjar112 [here](https://github.com/keras-team/keras/issues/10648). This is a keras 2.2.4 related problem. 
+
 #### Download Physionet Dataset
 EEGNet: 
 Download the `.edf` files of the Physionet EEG Motor Movement/Imagery Dataset [here](https://physionet.org/content/eegmmidb/1.0.0/), unpack it, and put into the folder `dataset/`
@@ -29,12 +30,12 @@ Download the `.edf` files of the Physionet EEG Motor Movement/Imagery Dataset [h
 #### Train and Validate Global and Subject-specific Models
 Global models are trained and validated in `main_global.py`. Results are in `results/your-global-experiment/stats` and global models in `results/your-experiment-name/model`. 
 ```
-python3 main_global.py
+$ (mybciEnv) python3 main_global.py
 ```
 
 After having trained and stored the global model, they can be refined by doing subject-specific transfer learning (SS-TL) using `main_ss.py`. 
 ```
-python3 main_ss.py
+$ (mybciEnv) python3 main_ss.py
 ```
 #### Plots
 tbd. 
