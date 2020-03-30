@@ -38,7 +38,7 @@ After having trained and stored the global model, they can be refined by doing s
 $ (mybciEnv) python3 main_ss.py
 ```
 #### Plots
-tbd. 
+A notebook with selected plots is available under `plot_nbook/`. 
 
 
 ### License and Attribution
