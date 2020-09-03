@@ -1,4 +1,22 @@
-# Copyright (c) 2020 ETH Zurich, Xiaying Wang, Michael Hersche, Batuhan Toemekce, Burak Kaya, Michele Magno, Luca Benini
+#*----------------------------------------------------------------------------*
+#* Copyright (C) 2020 ETH Zurich, Switzerland                                 *
+#* SPDX-License-Identifier: Apache-2.0                                        *
+#*                                                                            *
+#* Licensed under the Apache License, Version 2.0 (the "License");            *
+#* you may not use this file except in compliance with the License.           *
+#* You may obtain a copy of the License at                                    *
+#*                                                                            *
+#* http://www.apache.org/licenses/LICENSE-2.0                                 *
+#*                                                                            *
+#* Unless required by applicable law or agreed to in writing, software        *
+#* distributed under the License is distributed on an "AS IS" BASIS,          *
+#* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+#* See the License for the specific language governing permissions and        *
+#* limitations under the License.                                             *
+#*                                                                            *
+#* Authors: Batuhan Toemekce, Burak Kaya, Michael Hersche                     *
+#*----------------------------------------------------------------------------*
+
 #!/usr/bin/env python3
 
 #################################################
@@ -55,7 +73,7 @@ def save_results(history,num_classes,n_ds,n_ch,T,split_ctr):
     results[1] = history.history['val_acc']
     results[2] = history.history['loss']
     results[3] = history.history['val_loss']
-    results_str = f'{results_dir}/stats/global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.csv'
+    results_str = os.path.join(results_dir,f'stats/global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.csv')
                  
     np.savetxt(results_str, np.transpose(results))
     return results[0:2,-1]
@@ -66,7 +84,7 @@ def save_results(history,num_classes,n_ds,n_ch,T,split_ctr):
 experiment_name = 'your-global-experiment'
 
 datapath = "/usr/scratch/xavier/herschmi/EEG_data/physionet/"
-results_dir=f'results/'
+results_dir=f'results/{experiment_name}/'
 #os.makedirs(results_dir, exist_ok=True)
 os.makedirs(f'{results_dir}{experiment_name}/stats', exist_ok=True)
 os.makedirs(f'{results_dir}{experiment_name}/model', exist_ok=True)
@@ -74,7 +92,7 @@ os.makedirs(f'{results_dir}{experiment_name}/plots', exist_ok=True)
 
 # HYPERPARAMETER TO SET 
 num_classes_list = [4] # list of number of classes to test {2,3,4}
-n_epochs = 100 # number of epochs for training
+n_epochs = 2 # number of epochs for training
 n_ds = 1 # downsamlping factor {1,2,3}
 n_ch_list = [64] # number of channels {8,19,27,38,64}
 T_list = [3] # duration to classify {1,2,3}
@@ -95,8 +113,8 @@ for num_classes in num_classes_list:
 
             ######## If you want to save the data after loading once from .edf (faster)
             #np.savez(datapath+f'{num_classes}class',X_Train = X_Train, y_Train = y_Train)
-            #npzfile = np.load(datapath+f'{num_classes}class.npz')
-            #X, y = npzfile['X_Train'], npzfile['y_Train']
+            npzfile = np.load(datapath+f'{num_classes}class.npz')
+            X, y = npzfile['X_Train'], npzfile['y_Train']
 
             # reduce EEG data (downsample, number of channels, time window)
             X = eeg_reduction(X,n_ds = n_ds, n_ch = n_ch, T = T)
@@ -136,7 +154,7 @@ for num_classes in num_classes_list:
                 print('Fold {:}\t{:.4f}\t{:.4f}'.format(split_ctr,acc[split_ctr,0], acc[split_ctr,1]))
 
                 #Save model
-                model.save(f'{results_dir}/model/global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.h5')
+                model.save(os.path.join(results_dir,f'model/global_class_{num_classes}_ds{n_ds}_nch{n_ch}_T{T}_split_{split_ctr}.h5'))
 
                 #Clear Models
                 K.clear_session()
